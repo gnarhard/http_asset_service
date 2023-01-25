@@ -5,14 +5,17 @@ import 'package:flutter_archive/flutter_archive.dart';
 import 'package:path_provider/path_provider.dart';
 
 class HttpAssetService {
+  final String url;
+  final String zipFilePath;
+  final String destinationDirPath;
   final HttpClient http;
-  List<String> endpoints;
 
-  String? currentEndpoint;
-  String? currentZipFilePath;
-  String? currentDesitinationDirPath;
-
-  HttpAssetService({required this.http, required this.endpoints});
+  HttpAssetService({
+    required this.http,
+    required this.url,
+    required this.zipFilePath,
+    required this.destinationDirPath,
+  });
 
   Future<File> _downloadFile(String url, String filename) async {
     var request = await http.getUrl(Uri.parse(url));
@@ -25,12 +28,8 @@ class HttpAssetService {
   }
 
   _extractWithProgress() async {
-    if (!_hasGoodConfigs()) {
-      return;
-    }
-
-    final zipFile = File(currentZipFilePath!);
-    final destinationDir = Directory(currentDesitinationDirPath!);
+    final zipFile = File(zipFilePath!);
+    final destinationDir = Directory(destinationDirPath!);
 
     try {
       await ZipFile.extractToDirectory(
@@ -53,24 +52,9 @@ class HttpAssetService {
     }
   }
 
-  _hasGoodConfigs() {
-    if (currentZipFilePath == null || currentEndpoint == null) {
-      return false;
-    }
-
-    return true;
-  }
-
-  void downloadAndExtract() {
-    if (endpoints.isEmpty) {
-      return;
-    }
-
-    currentEndpoint = endpoints.first;
-    currentZipFilePath = currentEndpoint!.split('/').last;
-    currentDesitinationDirPath = currentZipFilePath!.split('.').first;
-
-    _downloadFile(currentEndpoint!, currentZipFilePath!).then((file) {
+  Future<void> downloadAndExtract() async {
+    // todo: compute()?
+    await _downloadFile(url, zipFilePath).then((file) {
       _extractWithProgress();
     });
   }
