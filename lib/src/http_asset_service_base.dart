@@ -1,27 +1,26 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 class HttpAssetService {
-  final String url;
   final String zipFilePath;
-  final String destinationDirPath;
+  final String zipFilename;
   final Future<http.Response> Function() httpRequest;
 
   HttpAssetService({
     required this.httpRequest,
-    required this.url,
     required this.zipFilePath,
-    required this.destinationDirPath,
+    required this.zipFilename,
   });
 
-  Future<File> _downloadFile(String url, String filename) async {
+  Future<File> _downloadFile() async {
     final response = await httpRequest();
     String dir = (await getApplicationDocumentsDirectory()).path;
-    File file = File('$dir/$filename');
-    await file.writeAsBytes(response.bodyBytes);
+    File file = File('$dir/$zipFilename');
+    await compute(file.writeAsBytes, response.bodyBytes);
     return file;
   }
 
@@ -51,7 +50,7 @@ class HttpAssetService {
 
   Future<void> downloadAndExtract() async {
     // todo: compute()?
-    await _downloadFile(url, zipFilePath).then((file) {
+    await _downloadFile().then((file) {
       _extractWithProgress();
     });
   }
