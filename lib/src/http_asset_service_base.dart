@@ -1,40 +1,37 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_archive/flutter_archive.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 class HttpAssetService {
   final String url;
   final String zipFilePath;
   final String destinationDirPath;
-  final HttpClient http;
+  final Future<http.Response> Function() httpRequest;
 
   HttpAssetService({
-    required this.http,
+    required this.httpRequest,
     required this.url,
     required this.zipFilePath,
     required this.destinationDirPath,
   });
 
   Future<File> _downloadFile(String url, String filename) async {
-    var request = await http.getUrl(Uri.parse(url));
-    var response = await request.close();
-    var bytes = await consolidateHttpClientResponseBytes(response);
+    final response = await httpRequest();
     String dir = (await getApplicationDocumentsDirectory()).path;
     File file = File('$dir/$filename');
-    await file.writeAsBytes(bytes);
+    await file.writeAsBytes(response.bodyBytes);
     return file;
   }
 
   _extractWithProgress() async {
-    final zipFile = File(zipFilePath!);
-    final destinationDir = Directory(destinationDirPath!);
+    final zipFile = File(zipFilePath);
 
     try {
       await ZipFile.extractToDirectory(
           zipFile: zipFile,
-          destinationDir: destinationDir,
+          destinationDir: await getApplicationDocumentsDirectory(),
           onExtracting: (zipEntry, progress) {
             print('progress: ${progress.toStringAsFixed(1)}%');
             print('name: ${zipEntry.name}');
