@@ -18,8 +18,8 @@ class HttpAssetService {
 
   Future<File> _downloadFile() async {
     final response = await httpRequest();
-    String dir = (await getApplicationDocumentsDirectory()).path;
-    File file = File('$dir/$zipFilename');
+    File file =
+        File('${(await getApplicationDocumentsDirectory()).path}/$zipFilename');
     await compute(file.writeAsBytes, response.bodyBytes);
     return file;
   }
