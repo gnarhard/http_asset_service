@@ -42,10 +42,9 @@ class HttpAssetService {
     final response = await httpRequest();
     final int? total = response.contentLength;
     response.stream.listen((value) async {
-      _bytes.addAll(value);
+      compute(_bytes.addAll, value);
 
       if (downloadProgressCallback != null) {
-        print('downloaded: ${_bytes.length} / $total');
         downloadProgressCallback!(_bytes.length / total! * 100);
       }
     }).onDone(() async {
@@ -55,7 +54,8 @@ class HttpAssetService {
     });
   }
 
-  extractWithProgress() async {
+  Future<void> extractWithProgress() async {
+    print('here');
     try {
       await ZipFile.extractToDirectory(
         zipFile: file!,
