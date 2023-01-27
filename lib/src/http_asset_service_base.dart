@@ -20,7 +20,8 @@ class HttpAssetService {
     final response = await httpRequest();
     File file =
         File('${(await getApplicationDocumentsDirectory()).path}/$zipFilename');
-    await compute(file.writeAsBytes, response.bodyBytes);
+    await file.writeAsBytes(response.bodyBytes);
+    // await compute(file.writeAsBytes, response.bodyBytes);
     return file;
   }
 
@@ -49,9 +50,8 @@ class HttpAssetService {
   }
 
   Future<void> downloadAndExtract() async {
-    // todo: compute()?
-    await _downloadFile().then((file) {
-      _extractWithProgress();
+    await _downloadFile().then((file) async {
+      await _extractWithProgress();
     });
   }
 }
