@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
 import 'package:rxdart/subjects.dart';
@@ -16,9 +15,7 @@ class HttpAssetService {
   String get zipFilePath => '$zipFileDir/$zipFilename';
 
   final isdownloaded$ = BehaviorSubject<bool>.seeded(false);
-
   final List<int> _bytes = [];
-
   File? file;
 
   HttpAssetService({
@@ -63,8 +60,8 @@ class HttpAssetService {
           if (extractionProgressCallback != null) {
             extractionProgressCallback!(progress);
           }
-          print('progress: ${progress.toStringAsFixed(1)}%');
-          print('name: ${zipEntry.name}');
+          // print('progress: ${progress.toStringAsFixed(1)}%');
+          // print('name: ${zipEntry.name}');
           // print('isDirectory: ${zipEntry.isDirectory}');
           // print(
           //     'modificationDate: ${zipEntry.modificationDate?.toLocal().toIso8601String()}');
