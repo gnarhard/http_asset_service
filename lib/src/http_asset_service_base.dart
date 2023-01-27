@@ -46,7 +46,7 @@ class HttpAssetService {
 
       if (downloadProgressCallback != null) {
         print('downloaded: ${_bytes.length} / $total');
-        downloadProgressCallback!(total! / value.length);
+        downloadProgressCallback!(_bytes.length / total! * 100);
       }
     }).onDone(() async {
       file = File(zipFilePath);
