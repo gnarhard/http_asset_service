@@ -18,38 +18,40 @@ class HttpAssetService {
     required this.zipFilename,
   });
 
-  Future<File> _downloadFile() async {
+  Future<File> downloadFile() async {
     final response = await httpRequest();
     File file = File(zipFilePath);
     await compute(file.writeAsBytes, response.bodyBytes);
     return file;
   }
 
-  _extractWithProgress(File zipFile) async {
+  extractWithProgress(File zipFile) async {
+    print(zipFile);
     try {
       await ZipFile.extractToDirectory(
-          zipFile: zipFile,
-          destinationDir: await getApplicationDocumentsDirectory(),
-          onExtracting: (zipEntry, progress) {
-            print('progress: ${progress.toStringAsFixed(1)}%');
-            print('name: ${zipEntry.name}');
-            print('isDirectory: ${zipEntry.isDirectory}');
-            print(
-                'modificationDate: ${zipEntry.modificationDate?.toLocal().toIso8601String()}');
-            print('uncompressedSize: ${zipEntry.uncompressedSize}');
-            print('compressedSize: ${zipEntry.compressedSize}');
-            print('compressionMethod: ${zipEntry.compressionMethod}');
-            print('crc: ${zipEntry.crc}');
-            return ZipFileOperation.includeItem;
-          });
+        zipFile: zipFile,
+        destinationDir: await getApplicationDocumentsDirectory(),
+        onExtracting: (zipEntry, progress) {
+          print('progress: ${progress.toStringAsFixed(1)}%');
+          print('name: ${zipEntry.name}');
+          print('isDirectory: ${zipEntry.isDirectory}');
+          print(
+              'modificationDate: ${zipEntry.modificationDate?.toLocal().toIso8601String()}');
+          print('uncompressedSize: ${zipEntry.uncompressedSize}');
+          print('compressedSize: ${zipEntry.compressedSize}');
+          print('compressionMethod: ${zipEntry.compressionMethod}');
+          print('crc: ${zipEntry.crc}');
+          return ZipFileOperation.includeItem;
+        },
+      );
     } catch (e) {
       print(e);
     }
   }
 
   Future<void> downloadAndExtract() async {
-    await _downloadFile().then((file) async {
-      await _extractWithProgress(file);
+    await downloadFile().then((file) async {
+      // await _extractWithProgress(file);
     });
   }
 }
