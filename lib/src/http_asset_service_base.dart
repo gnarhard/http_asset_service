@@ -26,7 +26,6 @@ class HttpAssetService {
   }
 
   extractWithProgress(File zipFile) async {
-    print(zipFile);
     try {
       await ZipFile.extractToDirectory(
         zipFile: zipFile,
@@ -51,7 +50,7 @@ class HttpAssetService {
 
   Future<void> downloadAndExtract() async {
     await downloadFile().then((file) async {
-      // await _extractWithProgress(file);
+      await extractWithProgress(file);
     });
   }
 }
