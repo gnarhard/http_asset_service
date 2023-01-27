@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 class HttpAssetService {
   final String zipFileDir;
   final String zipFilename;
+  final Directory destinationDir;
   final Future<http.Response> Function() httpRequest;
 
   String get zipFilePath => '$zipFileDir/$zipFilename';
@@ -16,6 +16,7 @@ class HttpAssetService {
     required this.httpRequest,
     required this.zipFileDir,
     required this.zipFilename,
+    required this.destinationDir,
   });
 
   Future<File> downloadFile() async {
@@ -29,7 +30,7 @@ class HttpAssetService {
     try {
       await ZipFile.extractToDirectory(
         zipFile: zipFile,
-        destinationDir: await getApplicationDocumentsDirectory(),
+        destinationDir: destinationDir,
         onExtracting: (zipEntry, progress) {
           print('progress: ${progress.toStringAsFixed(1)}%');
           print('name: ${zipEntry.name}');
