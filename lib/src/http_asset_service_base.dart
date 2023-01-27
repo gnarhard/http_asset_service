@@ -42,6 +42,8 @@ class HttpAssetService {
     final response = await httpRequest();
     final int? total = response.contentLength;
     response.stream.listen((value) async {
+      print('downloaded: ${_bytes.length} / $total');
+
       _bytes.addAll(value);
       if (downloadProgressCallback != null) {
         downloadProgressCallback!(value.length / total!);
