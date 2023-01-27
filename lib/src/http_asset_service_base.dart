@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 class HttpAssetService {
   final String zipFileDir;
   final String zipFilename;
-  final Directory destinationDir;
+  final String destinationDir;
   final Future<http.Response> Function() httpRequest;
 
   String get zipFilePath => '$zipFileDir/$zipFilename';
@@ -30,7 +30,7 @@ class HttpAssetService {
     try {
       await ZipFile.extractToDirectory(
         zipFile: zipFile,
-        destinationDir: destinationDir,
+        destinationDir: Directory(destinationDir),
         onExtracting: (zipEntry, progress) {
           print('progress: ${progress.toStringAsFixed(1)}%');
           print('name: ${zipEntry.name}');
