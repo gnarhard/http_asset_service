@@ -45,7 +45,7 @@ class HttpAssetService {
       _bytes.addAll(value);
 
       if (downloadProgressCallback != null) {
-        downloadProgressCallback!(value.length / total! * 100);
+        downloadProgressCallback!(_bytes.length / total! * 100);
       }
     }).onDone(() async {
       file = File(zipFilePath);
@@ -55,7 +55,6 @@ class HttpAssetService {
   }
 
   Future<void> extractWithProgress() async {
-    print('here');
     try {
       await ZipFile.extractToDirectory(
         zipFile: file!,
