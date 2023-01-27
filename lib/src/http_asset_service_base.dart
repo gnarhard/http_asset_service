@@ -9,6 +9,7 @@ class HttpAssetService {
   final String zipFilename;
   final String destinationDir;
   final Future<http.Response> Function() httpRequest;
+  final Function(double)? downloadProgressCallback;
 
   String get zipFilePath => '$zipFileDir/$zipFilename';
 
@@ -17,6 +18,7 @@ class HttpAssetService {
     required this.zipFileDir,
     required this.zipFilename,
     required this.destinationDir,
+    this.downloadProgressCallback,
   });
 
   Future<File> downloadFile() async {
@@ -32,15 +34,18 @@ class HttpAssetService {
         zipFile: zipFile,
         destinationDir: Directory(destinationDir),
         onExtracting: (zipEntry, progress) {
-          print('progress: ${progress.toStringAsFixed(1)}%');
-          print('name: ${zipEntry.name}');
-          print('isDirectory: ${zipEntry.isDirectory}');
-          print(
-              'modificationDate: ${zipEntry.modificationDate?.toLocal().toIso8601String()}');
-          print('uncompressedSize: ${zipEntry.uncompressedSize}');
-          print('compressedSize: ${zipEntry.compressedSize}');
-          print('compressionMethod: ${zipEntry.compressionMethod}');
-          print('crc: ${zipEntry.crc}');
+          if (downloadProgressCallback != null) {
+            downloadProgressCallback!(progress);
+          }
+          // print('progress: ${progress.toStringAsFixed(1)}%');
+          // print('name: ${zipEntry.name}');
+          // print('isDirectory: ${zipEntry.isDirectory}');
+          // print(
+          //     'modificationDate: ${zipEntry.modificationDate?.toLocal().toIso8601String()}');
+          // print('uncompressedSize: ${zipEntry.uncompressedSize}');
+          // print('compressedSize: ${zipEntry.compressedSize}');
+          // print('compressionMethod: ${zipEntry.compressionMethod}');
+          // print('crc: ${zipEntry.crc}');
           return ZipFileOperation.includeItem;
         },
       );
