@@ -45,7 +45,7 @@ class HttpAssetService {
       compute(_bytes.addAll, value);
 
       if (downloadProgressCallback != null) {
-        downloadProgressCallback!(_bytes.length / total! * 100);
+        downloadProgressCallback!(value.length / total! * 100);
       }
     }).onDone(() async {
       file = File(zipFilePath);
