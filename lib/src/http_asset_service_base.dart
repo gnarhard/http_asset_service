@@ -42,18 +42,16 @@ class HttpAssetService {
     final response = await httpRequest();
     final int? total = response.contentLength;
     response.stream.listen((value) async {
-      print('downloaded: ${_bytes.length} / $total');
-
       _bytes.addAll(value);
-      if (downloadProgressCallback != null) {
-        downloadProgressCallback!(value.length / total!);
-      }
 
-      if (_bytes.length == total) {
-        file = File(zipFilePath);
-        await compute(file!.writeAsBytes, _bytes);
-        isdownloaded$.add(true);
+      if (downloadProgressCallback != null) {
+        print('downloaded: ${_bytes.length} / $total');
+        downloadProgressCallback!(total! / value.length);
       }
+    }).onDone(() async {
+      file = File(zipFilePath);
+      await compute(file!.writeAsBytes, _bytes);
+      isdownloaded$.add(true);
     });
   }
 
