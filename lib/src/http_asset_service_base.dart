@@ -6,28 +6,26 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
 class HttpAssetService {
-  final String zipFilePath;
+  final String zipFileDir;
   final String zipFilename;
   final Future<http.Response> Function() httpRequest;
 
+  String get zipFilePath => '$zipFileDir/$zipFilename';
+
   HttpAssetService({
     required this.httpRequest,
-    required this.zipFilePath,
+    required this.zipFileDir,
     required this.zipFilename,
   });
 
   Future<File> _downloadFile() async {
     final response = await httpRequest();
-    File file =
-        File('${(await getApplicationDocumentsDirectory()).path}/$zipFilename');
-    await file.writeAsBytes(response.bodyBytes);
-    // await compute(file.writeAsBytes, response.bodyBytes);
+    File file = File(zipFilePath);
+    await compute(file.writeAsBytes, response.bodyBytes);
     return file;
   }
 
-  _extractWithProgress() async {
-    final zipFile = File(zipFilePath);
-
+  _extractWithProgress(File zipFile) async {
     try {
       await ZipFile.extractToDirectory(
           zipFile: zipFile,
@@ -51,7 +49,7 @@ class HttpAssetService {
 
   Future<void> downloadAndExtract() async {
     await _downloadFile().then((file) async {
-      await _extractWithProgress();
+      await _extractWithProgress(file);
     });
   }
 }
