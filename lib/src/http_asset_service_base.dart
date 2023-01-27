@@ -9,7 +9,8 @@ class HttpAssetService {
   final String zipFilename;
   final String destinationDir;
   final Future<http.StreamedResponse> Function() httpRequest;
-  final Function(double)? progressCallback;
+  final Function(double)? extractionProgressCallback;
+  final Function(double)? downloadProgressCallback;
 
   String get zipFilePath => '$zipFileDir/$zipFilename';
 
@@ -20,7 +21,8 @@ class HttpAssetService {
     required this.zipFileDir,
     required this.zipFilename,
     required this.destinationDir,
-    this.progressCallback,
+    this.downloadProgressCallback,
+    this.extractionProgressCallback,
   });
 
   Future<File> downloadFile() async {
@@ -28,8 +30,8 @@ class HttpAssetService {
     final int? total = response.contentLength;
     response.stream.listen((value) {
       _bytes.addAll(value);
-      if (progressCallback != null) {
-        progressCallback!(value.length / total!);
+      if (downloadProgressCallback != null) {
+        downloadProgressCallback!(value.length / total!);
       }
     });
     File file = File(zipFilePath);
@@ -43,8 +45,8 @@ class HttpAssetService {
         zipFile: zipFile,
         destinationDir: Directory(destinationDir),
         onExtracting: (zipEntry, progress) {
-          if (progressCallback != null) {
-            progressCallback!(progress);
+          if (extractionProgressCallback != null) {
+            extractionProgressCallback!(progress);
           }
           // print('progress: ${progress.toStringAsFixed(1)}%');
           // print('name: ${zipEntry.name}');
