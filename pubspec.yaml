@@ -15,3 +15,4 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_archive: ^5.0.0
+  rxdart: ^0.27.7

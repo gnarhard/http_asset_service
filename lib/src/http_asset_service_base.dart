@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter_archive/flutter_archive.dart';
 import 'package:http/http.dart' as http;
+import 'package:rxdart/subjects.dart';
 
 class HttpAssetService {
   final String zipFileDir;
@@ -14,7 +15,11 @@ class HttpAssetService {
 
   String get zipFilePath => '$zipFileDir/$zipFilename';
 
+  final isdownloaded$ = BehaviorSubject<bool>.seeded(false);
+
   final List<int> _bytes = [];
+
+  File? file;
 
   HttpAssetService({
     required this.httpRequest,
@@ -23,33 +28,44 @@ class HttpAssetService {
     required this.destinationDir,
     this.downloadProgressCallback,
     this.extractionProgressCallback,
-  });
+  }) {
+    isdownloaded$.listen((value) {
+      if (value) {
+        extractWithProgress();
+      }
+    });
+  }
 
-  Future<File> downloadFile() async {
+  Future<void> downloadFile() async {
+    isdownloaded$.add(false);
+
     final response = await httpRequest();
     final int? total = response.contentLength;
-    response.stream.listen((value) {
+    response.stream.listen((value) async {
       _bytes.addAll(value);
       if (downloadProgressCallback != null) {
         downloadProgressCallback!(value.length / total!);
       }
+
+      if (_bytes.length == total) {
+        file = File(zipFilePath);
+        await compute(file!.writeAsBytes, _bytes);
+        isdownloaded$.add(true);
+      }
     });
-    File file = File(zipFilePath);
-    await compute(file.writeAsBytes, _bytes);
-    return file;
   }
 
-  extractWithProgress(File zipFile) async {
+  extractWithProgress() async {
     try {
       await ZipFile.extractToDirectory(
-        zipFile: zipFile,
+        zipFile: file!,
         destinationDir: Directory(destinationDir),
         onExtracting: (zipEntry, progress) {
           if (extractionProgressCallback != null) {
             extractionProgressCallback!(progress);
           }
-          // print('progress: ${progress.toStringAsFixed(1)}%');
-          // print('name: ${zipEntry.name}');
+          print('progress: ${progress.toStringAsFixed(1)}%');
+          print('name: ${zipEntry.name}');
           // print('isDirectory: ${zipEntry.isDirectory}');
           // print(
           //     'modificationDate: ${zipEntry.modificationDate?.toLocal().toIso8601String()}');
@@ -60,6 +76,10 @@ class HttpAssetService {
           return ZipFileOperation.includeItem;
         },
       );
+
+      if (file != null) {
+        await file!.delete();
+      }
     } catch (e) {
       print(e);
     }
@@ -70,9 +90,6 @@ class HttpAssetService {
       await Directory(destinationDir).delete(recursive: true);
     }
 
-    await downloadFile().then((file) async {
-      await extractWithProgress(file);
-      await file.delete();
-    });
+    await downloadFile();
   }
 }
