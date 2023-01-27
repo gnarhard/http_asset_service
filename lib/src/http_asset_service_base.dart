@@ -29,7 +29,7 @@ class HttpAssetService {
     this.downloadProgressCallback,
     this.extractionProgressCallback,
   }) {
-    isdownloaded$.listen((value) {
+    isdownloaded$.distinct().listen((value) {
       if (value) {
         extractWithProgress();
       }
@@ -42,14 +42,14 @@ class HttpAssetService {
     final response = await httpRequest();
     final int? total = response.contentLength;
     response.stream.listen((value) async {
-      compute(_bytes.addAll, value);
+      _bytes.addAll(value);
 
       if (downloadProgressCallback != null) {
         downloadProgressCallback!(value.length / total! * 100);
       }
     }).onDone(() async {
       file = File(zipFilePath);
-      await compute(file!.writeAsBytes, _bytes);
+      await file!.writeAsBytes(_bytes);
       isdownloaded$.add(true);
     });
   }
