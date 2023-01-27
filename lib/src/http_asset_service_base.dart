@@ -50,8 +50,13 @@ class HttpAssetService {
   }
 
   Future<void> downloadAndExtract() async {
+    if (await Directory(destinationDir).exists()) {
+      await Directory(destinationDir).delete(recursive: true);
+    }
+
     await downloadFile().then((file) async {
       await extractWithProgress(file);
+      await file.delete();
     });
   }
 }
