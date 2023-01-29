@@ -15,6 +15,7 @@ class HttpAssetService {
   String get zipFilePath => '$zipFileDir/$zipFilename';
 
   final isdownloaded$ = BehaviorSubject<bool>.seeded(false);
+
   final List<int> _bytes = [];
   File? file;
 
@@ -57,6 +58,7 @@ class HttpAssetService {
         zipFile: file!,
         destinationDir: Directory(destinationDir),
         onExtracting: (zipEntry, progress) {
+          print(progress);
           if (extractionProgressCallback != null) {
             extractionProgressCallback!(progress);
           }
