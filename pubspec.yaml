@@ -14,6 +14,9 @@ dev_dependencies:
       ref: main
   flutter_test:
     sdk: flutter
+  integration_test:
+    sdk: flutter
+  path_provider: ^2.0.12
 dependencies:
   http: ^0.13.5
   flutter_archive: ^5.0.0

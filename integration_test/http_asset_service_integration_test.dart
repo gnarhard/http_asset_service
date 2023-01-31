@@ -1,22 +1,21 @@
 import 'dart:io';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_archive/flutter_archive.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_asset_service/http_asset_service.dart';
-import 'package:test/test.dart';
-import 'package:test_storage/test_storage.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'empty_app.dart' as app;
 
 void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
   group('HttpAssetService', () {
     late HttpAssetService service;
-    final String zipFileDir = Directory.current.path;
-    final String zipFilename = 'test.zip';
-    final String destinationDir = '$zipFileDir/dest';
-    File zipFile = File('$zipFileDir/$zipFilename');
 
     http.StreamedResponse? httpResponse;
     double downloadProgress = 0;
-    double extractionProgress = 0;
     const List<List<int>> fileBytes = [
       [1, 2, 3],
       [4, 5, 6],
@@ -30,35 +29,36 @@ void main() {
         contentLength: 6,
       );
       downloadProgress = 0;
-      extractionProgress = 0;
 
       service = HttpAssetService(
         httpRequest: () => Future.value(httpResponse),
-        zipFileDir: zipFileDir,
-        zipFilename: zipFilename,
-        destinationDir: destinationDir,
+        fileDirectory: (await getApplicationDocumentsDirectory()).path,
+        filename: 'test.zip',
+        destinationDirectory: '/dest',
         downloadProgressCallback: (progress) => downloadProgress = progress,
-        extractionProgressCallback: (progress) => extractionProgress = progress,
       );
     });
 
     tearDown(() async {
+      File zipFile = File(service.filePath);
       if (await zipFile.exists()) {
         zipFile.delete();
       }
       // remove the test directory created
-      final dir = Directory(destinationDir);
+      final dir = Directory(service.fileDirectory);
       if (await dir.exists()) {
         dir.delete(recursive: true);
       }
     });
 
-    test('downloadFile', () async {
-      await service.downloadFile();
+    testWidgets('files can be downloaded', (tester) async {
+      app.main();
+      await tester.pumpAndSettle();
 
-      await expectLater(
-          service.isdownloaded$.stream, emitsInOrder([false, true]));
-      expect(await zipFile.exists(), true);
+      final file = await service.downloadFile();
+
+      expect(file, isNotNull);
+      expect(await file.exists(), true);
       expect(downloadProgress, 100);
     });
   });

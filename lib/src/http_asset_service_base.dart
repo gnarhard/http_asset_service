@@ -5,60 +5,49 @@ import 'package:http/http.dart' as http;
 import 'package:rxdart/subjects.dart';
 
 class HttpAssetService {
-  final String zipFileDir;
-  final String zipFilename;
-  final String destinationDir;
+  final String fileDirectory;
+  final String filename;
+  final String destinationDirectory;
   final Future<http.StreamedResponse> Function() httpRequest;
   final Function(double)? extractionProgressCallback;
   final Function(double)? downloadProgressCallback;
 
-  String get zipFilePath => '$zipFileDir/$zipFilename';
-
-  final isdownloaded$ = BehaviorSubject<bool>.seeded(false);
+  String get filePath => '$fileDirectory/$filename';
 
   final List<int> _bytes = [];
-  File? file;
 
   HttpAssetService({
     required this.httpRequest,
-    required this.zipFileDir,
-    required this.zipFilename,
-    required this.destinationDir,
+    required this.fileDirectory,
+    required this.filename,
+    required this.destinationDirectory,
     this.downloadProgressCallback,
     this.extractionProgressCallback,
-  }) {
-    isdownloaded$.distinct().listen((value) {
-      if (value) {
-        extractWithProgress();
-      }
-    });
-  }
+  });
 
-  Future<void> downloadFile() async {
-    isdownloaded$.add(false);
-
+  Future<File> downloadFile() async {
     final response = await httpRequest();
     final int? total = response.contentLength;
     response.stream.listen((value) async {
       _bytes.addAll(value);
-
       if (downloadProgressCallback != null) {
         downloadProgressCallback!(_bytes.length / total! * 100);
       }
-    }).onDone(() async {
-      file = File(zipFilePath);
-      await file!.writeAsBytes(_bytes);
-      isdownloaded$.add(true);
     });
+
+    final byteList = await response.stream.toBytes();
+    final file = File(filePath);
+    await file.writeAsBytes(byteList);
+
+    return file;
   }
 
-  Future<void> extractWithProgress() async {
+  Future<void> extractWithProgress(File file) async {
     try {
       await ZipFile.extractToDirectory(
-        zipFile: file!,
-        destinationDir: Directory(destinationDir),
+        zipFile: file,
+        destinationDir: Directory(destinationDirectory),
         onExtracting: (zipEntry, progress) {
-          print(progress);
           if (extractionProgressCallback != null) {
             extractionProgressCallback!(progress);
           }
@@ -74,20 +63,18 @@ class HttpAssetService {
           return ZipFileOperation.includeItem;
         },
       );
-
-      if (file != null) {
-        await file!.delete();
-      }
     } catch (e) {
       print(e);
     }
   }
 
   Future<void> downloadAndExtract() async {
-    if (await Directory(destinationDir).exists()) {
-      await Directory(destinationDir).delete(recursive: true);
+    if (await Directory(destinationDirectory).exists()) {
+      await Directory(destinationDirectory).delete(recursive: true);
     }
 
-    await downloadFile();
+    final file = await downloadFile();
+    await extractWithProgress(file);
+    await file.delete();
   }
 }
