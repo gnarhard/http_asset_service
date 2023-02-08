@@ -28,16 +28,16 @@ class HttpAssetService {
   Future<File> downloadFile() async {
     final response = await httpRequest();
     final int? total = response.contentLength;
-    response.stream.listen((value) async {
-      _bytes.addAll(value);
-      if (downloadProgressCallback != null) {
-        downloadProgressCallback!(_bytes.length / total! * 100);
-      }
-    });
 
-    final byteList = await response.stream.toBytes();
+    // response.stream.listen((value) async {
+    //   _bytes.addAll(value);
+    //   if (downloadProgressCallback != null) {
+    //     downloadProgressCallback!(_bytes.length / total! * 100);
+    //   }
+    // }, onDone: () async {});
+
     final file = File(filePath);
-    await file.writeAsBytes(byteList);
+    await file.writeAsBytes(_bytes);
 
     return file;
   }
