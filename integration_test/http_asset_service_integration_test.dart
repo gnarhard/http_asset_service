@@ -6,7 +6,7 @@ import 'package:http_asset_service/http_asset_service.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'empty_app.dart' as app;
+import 'package:http_asset_service/src/empty_app.dart' as app;
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

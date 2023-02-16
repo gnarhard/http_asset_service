@@ -27,8 +27,8 @@ class HttpAssetService {
 
   Future<File> downloadFile() async {
     final response = await httpRequest();
-    final int? total = response.contentLength;
-
+    // final int? total = response.contentLength;
+// 
     // response.stream.listen((value) async {
     //   _bytes.addAll(value);
     //   if (downloadProgressCallback != null) {
